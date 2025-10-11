@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import styled from '@emotion/styled';
 import { toast } from 'react-toastify';
 import { FaCheckCircle } from 'react-icons/fa';
+import { submissionAPI } from '../services/api';   // ✅ 추가: API 불러오기
 
 const FormContainer = styled.div`
   background: white;
@@ -125,23 +126,15 @@ function SubmitRestaurant() {
 
   const onSubmit = async (data) => {
     try {
-      // Netlify Forms로 제출
-      const response = await fetch("/", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          "form-name": "restaurant-submit",
-          ...data
-        }).toString()
-      });
-      
-      if (response.ok) {
-        setSubmitted(true);
-        toast.success('맛집이 성공적으로 제보되었습니다! 🎉');
-        reset();
-        setTimeout(() => setSubmitted(false), 5000);
-      }
+      // ✅ Express 백엔드 API 호출
+      await submissionAPI.createSubmission(data);
+
+      setSubmitted(true);
+      toast.success('맛집이 성공적으로 제보되었습니다! 🎉');
+      reset();
+      setTimeout(() => setSubmitted(false), 5000);
     } catch (error) {
+      console.error(error);
       toast.error('제출 중 오류가 발생했습니다.');
     }
   };
@@ -164,10 +157,9 @@ function SubmitRestaurant() {
   return (
     <FormContainer>
       <FormTitle>🍽️ 새로운 맛집 제보하기</FormTitle>
-      
+      {/* ✅ Netlify 관련 속성 제거 */}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <input type="hidden" name="form-name" value="restaurant-submit" />
-        
+
         <FormGroup>
           <Label htmlFor="restaurantName">맛집 이름 *</Label>
           <Input
